@@ -59,6 +59,30 @@ fs.readFile('file3.txt', (err, file) => {
 
 ![async](images/async2.png)
 
+##### El problema de los callbacks
+
+Si necesitamos utilizar el resultado de una operación asíncrona en otra, tarde o temprano nos topamos con el siguiente problema:
+
+```javascript
+fs.readFile('file1.txt', (err, file) => {
+  if (err) {
+    /* :( */
+  } else {
+    /* Success! */
+    fs.readFile('file2.txt', (err, file) => {
+      if (err) {
+        /* :( */
+      } else {
+        /* Success! */
+
+        /* And it goes on and on and on and on... */
+
+      })
+    }
+  }
+});
+```
+
 ### Promesas
 
 Para operaciones asíncronas, javascript provee algunas herramientas. Las promesas son objetos que representan una operación que no se ha completado y que se espera que se complete en el futuro.
@@ -85,6 +109,7 @@ promise.then(result => {
 
 ##### Encadenamiento:
 
+Los ```then()``` devuelven una nueva promesa, por lo que podemos encadenarlas:
 ```javascript
 promise.then(result1=> {
   
@@ -119,7 +144,7 @@ Promise.all([p1, p2, p3]).then([r1, r2, r3] => {
 
 ```
 
-Pero aquí no podemos garantizar el orden en que llegan las respuestas. Si alguna de esas promesas arroja un error, se pasa al `catch`.
+De esta manera podemos realizar lo que queramos una vez que tengamos todos los resultados (si resolvemos todas las promesas por separado, entonces no podríamos usar todos los resultados al mismo tiempo). Si alguna de esas promesas arroja un error, se pasa al `catch`.
 
 Arrow functions tiene scope de bloque.
 
