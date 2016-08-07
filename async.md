@@ -2,8 +2,8 @@
 
 ### Intro
 
-Javascript es single thread* y asíncrono. 
-  
+JavaScript es single thread* y asíncrono.
+
 _Everything runs on a different thread except our code._
 
 Las llamadas a operaciones asíncronas, tales como lectura/escritura de archivos o consultas a una base de datos, pueden ser ejecutadas de manera secuencial o en paralelo.
@@ -97,11 +97,11 @@ const promise = new Promise((resolve, reject) => {
   } else {
     reject(error);
   }
-   
+
 });
 
 promise.then(result => {
-  
+
 }).catch(error => {
 
 });
@@ -112,7 +112,7 @@ promise.then(result => {
 Los ```then()``` devuelven una nueva promesa, por lo que podemos encadenarlas:
 ```javascript
 promise.then(result1=> {
-  
+
 }).then(result2 => {
 
 }).then(result3 => {
@@ -133,7 +133,7 @@ promise.then(result1 => {
 });
 ```
 
-##### Y si tenemos varias promesas?
+##### ¿Y si tenemos varias promesas?
 
 ```javascript
 Promise.all([p1, p2, p3]).then([r1, r2, r3] => {
@@ -146,16 +146,49 @@ Promise.all([p1, p2, p3]).then([r1, r2, r3] => {
 
 De esta manera podemos realizar lo que queramos una vez que tengamos todos los resultados (si resolvemos todas las promesas por separado, entonces no podríamos usar todos los resultados al mismo tiempo). Si alguna de esas promesas arroja un error, se pasa al `catch`.
 
-Arrow functions tiene scope de bloque.
+Por último, recordemos que las arrow functions tienen scope de bloque.
 
+### Profundizando en la ejecución single thread y asíncrona
 
+Tal y como dijimos al principio, todo corre en un thread diferente excepto el código que nosotros escribamos.
 
-### async await
+Luego, todo el código de los *callbacks*, ```then()``` o ```catch()``` se ejecuta en el mismo thread que el resto de nuestro código. ¿Cómo ocurre esto?
+
+Cuando estas instrucciones estén listas para ser ejecutadas, se guardan en una cola de espera en una entidad abstracta que llamaremos `Job`.
+
+Una vez que no exista código propio en ejecución, se ejecuta alguno de los `Job` que está pendiente. Cuando esto sucede, se garantiza que ningún otro `Job` se ejecutará hasta que el actual termine. Sin embargo, es posible que el `Job` que se está ejecutando actualmente cree otros `Job`, los que se ejecutarán en algún momento.
+
+#### Consecuencias
+
+- No hay problemas de concurrencia
+- Se puede garantizar un orden parcial de las operaciones
+
+Sin embargo, esto también implica que ciertos programas funcionen inesperadamente lento:
+
+```javascript
+
+const start = new Date().getTime();
+const wait = 5000;
+
+setTimeout(function(){
+  alert('Wait one second')
+}, 1000);
+
+while(new Date().getTime() < start + wait);
+
+```
+
+Sin conocer lo señalado anteriormente, esperaríamos que el mensaje de alerta salga en 1 segundo aproximadamente. Sin embargo, sale aproximadamente a los 5 segundos.
+
+### ```Async``` / ```await```
+
+Vienen en el estándar ES7. Estas keywords sirven para trabajar con las promesas de una forma **aún** más limpia.
 
 ### References
 
 #### About single-threaded and async execution
 
-[How is javascript asynchronous AND single threaded?](http://www.sohamkamani.com/blog/2016/03/14/wrapping-your-head-around-async-programming/)
-[Here there are mentions to promises implementations with event loops, based on an specification](http://stackoverflow.com/questions/23447876/why-do-promise-libraries-use-event-loops)
-[Node.js event loop](https://nodesource.com/blog/understanding-the-nodejs-event-loop/)
+- [ECMA2015 spec](http://www.ecma-international.org/publications/files/ECMA-ST-ARCH/ECMA-262%206th%20edition%20June%202015.pdf)
+- [How is javascript asynchronous AND single threaded?](http://www.sohamkamani.com/blog/2016/03/14/wrapping-your-head-around-async-programming/)
+- [Promises libraries are implemented with event loops](http://stackoverflow.com/questions/23447876/why-do-promise-libraries-use-event-loops)
+- [Node.js event loop](https://nodesource.com/blog/understanding-the-nodejs-event-loop/)
